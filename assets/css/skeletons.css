@@ -1,0 +1,195 @@
+/* ============================================
+   Loading Skeletons for KITA-LOG
+   ============================================ */
+
+/* Base skeleton styles */
+.skeleton-container {
+    min-height: 200px;
+}
+
+/* Dashboard skeleton */
+.stats-skeleton {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat-skeleton-card {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 14px 12px;
+    height: 85px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-skeleton-line {
+    height: 24px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.stat-skeleton-label {
+    height: 10px;
+    width: 60%;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 8px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.quick-actions-skeleton {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.quick-btn-skeleton {
+    flex: 1;
+    height: 50px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 40px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.trending-skeleton {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.trending-card-skeleton {
+    width: 140px;
+    flex-shrink: 0;
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.trending-icon-skeleton {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.trending-title-skeleton {
+    height: 12px;
+    width: 80%;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.trending-price-skeleton {
+    height: 14px;
+    width: 60%;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.transaction-skeleton {
+    background: var(--bg-card);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.transaction-item-skeleton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transaction-left-skeleton {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.transaction-icon-skeleton {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 12px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.transaction-info-skeleton {
+    flex: 1;
+}
+
+.transaction-title-skeleton {
+    height: 14px;
+    width: 120px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.transaction-date-skeleton {
+    height: 10px;
+    width: 80px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+.transaction-amount-skeleton {
+    width: 70px;
+    height: 16px;
+    background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-color) 50%, var(--bg-hover) 75%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    animation: skeletonWave 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonWave {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Dark mode adjustments */
+.dark .stat-skeleton-card,
+.dark .trending-card-skeleton,
+.dark .transaction-skeleton {
+    background: rgba(26, 32, 44, 0.95);
+}
+
+.dark .stat-skeleton-line,
+.dark .stat-skeleton-label,
+.dark .quick-btn-skeleton,
+.dark .trending-icon-skeleton,
+.dark .trending-title-skeleton,
+.dark .trending-price-skeleton,
+.dark .transaction-icon-skeleton,
+.dark .transaction-title-skeleton,
+.dark .transaction-date-skeleton,
+.dark .transaction-amount-skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+    background-size: 200% 100%;
+}

@@ -1,0 +1,229 @@
+/* ============================================
+   KITA-LOG Page Transition Animations
+   Uniform fade-in for all pages
+   ============================================ */
+
+/* Page fade-in animation */
+.page-content {
+    animation: pageFadeIn 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+}
+
+@keyframes pageFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card stagger fade-in */
+.content-card {
+    animation: cardFadeIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.content-card:nth-child(1) { animation-delay: 0.05s; }
+.content-card:nth-child(2) { animation-delay: 0.1s; }
+.content-card:nth-child(3) { animation-delay: 0.15s; }
+.content-card:nth-child(4) { animation-delay: 0.2s; }
+.content-card:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes cardFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Row stagger fade-in (for lists) */
+.row-item {
+    animation: rowFadeIn 0.25s ease-out forwards;
+    opacity: 0;
+}
+
+.row-item:nth-child(1) { animation-delay: 0.03s; }
+.row-item:nth-child(2) { animation-delay: 0.06s; }
+.row-item:nth-child(3) { animation-delay: 0.09s; }
+.row-item:nth-child(4) { animation-delay: 0.12s; }
+.row-item:nth-child(5) { animation-delay: 0.15s; }
+.row-item:nth-child(6) { animation-delay: 0.18s; }
+.row-item:nth-child(7) { animation-delay: 0.21s; }
+.row-item:nth-child(8) { animation-delay: 0.24s; }
+.row-item:nth-child(9) { animation-delay: 0.27s; }
+.row-item:nth-child(10) { animation-delay: 0.30s; }
+
+@keyframes rowFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateX(-8px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Stats cards pop-in */
+.stat-card {
+    animation: statPopIn 0.3s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+    opacity: 0;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+@keyframes statPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Button subtle pop */
+.quick-btn, .submit-btn, .settings-btn, .add-btn {
+    animation: buttonPop 0.2s ease-out forwards;
+}
+
+@keyframes buttonPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Dashboard specific */
+.period-tabs {
+    animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Settings sections */
+.settings-section {
+    animation: sectionSlideUp 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.settings-section:nth-child(1) { animation-delay: 0.05s; }
+.settings-section:nth-child(2) { animation-delay: 0.1s; }
+.settings-section:nth-child(3) { animation-delay: 0.15s; }
+.settings-section:nth-child(4) { animation-delay: 0.2s; }
+.settings-section:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes sectionSlideUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Inventory items */
+.inventory-item {
+    animation: inventoryItemFade 0.25s ease-out forwards;
+    opacity: 0;
+}
+
+.inventory-item:nth-child(1) { animation-delay: 0.05s; }
+.inventory-item:nth-child(2) { animation-delay: 0.1s; }
+.inventory-item:nth-child(3) { animation-delay: 0.15s; }
+.inventory-item:nth-child(4) { animation-delay: 0.2s; }
+.inventory-item:nth-child(5) { animation-delay: 0.25s; }
+.inventory-item:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes inventoryItemFade {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Transaction rows */
+.txn-row, .activity-item, .transaction-item {
+    animation: transactionRowFade 0.25s ease-out forwards;
+    opacity: 0;
+}
+
+.txn-row:nth-child(1), .activity-item:nth-child(1), .transaction-item:nth-child(1) { animation-delay: 0.04s; }
+.txn-row:nth-child(2), .activity-item:nth-child(2), .transaction-item:nth-child(2) { animation-delay: 0.08s; }
+.txn-row:nth-child(3), .activity-item:nth-child(3), .transaction-item:nth-child(3) { animation-delay: 0.12s; }
+.txn-row:nth-child(4), .activity-item:nth-child(4), .transaction-item:nth-child(4) { animation-delay: 0.16s; }
+.txn-row:nth-child(5), .activity-item:nth-child(5), .transaction-item:nth-child(5) { animation-delay: 0.2s; }
+.txn-row:nth-child(6), .activity-item:nth-child(6), .transaction-item:nth-child(6) { animation-delay: 0.24s; }
+.txn-row:nth-child(7), .activity-item:nth-child(7), .transaction-item:nth-child(7) { animation-delay: 0.28s; }
+
+@keyframes transactionRowFade {
+    0% {
+        opacity: 0;
+        transform: translateX(-6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Modal fade-in */
+.modal-overlay.show, .modal.show {
+    animation: modalFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+    0% {
+        opacity: 0;
+        backdrop-filter: blur(0px);
+    }
+    100% {
+        opacity: 1;
+        backdrop-filter: blur(4px);
+    }
+}
+
+/* Toast slide-in */
+.toast-success, .toast-message {
+    animation: toastSlideIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+}
+
+@keyframes toastSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
