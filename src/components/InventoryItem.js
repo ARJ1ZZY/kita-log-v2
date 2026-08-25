@@ -1,7 +1,8 @@
-import React from 'react';
+import React from 'react'; 
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme, Colors, Spacing, BorderRadius } from '../styles/colors';
+import { t } from '../styles/designSystem';  // or the correct relative path
 
 const getStockStatus = (current, threshold) => {
   if (current <= 0) return { label: 'Out of Stock', color: Colors.light.danger, bg: Colors.light.dangerLight, icon: 'close-circle' };

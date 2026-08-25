@@ -1,14 +1,15 @@
 import React from 'react';
 import { Modal as RNModal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { theme } from '../styles/colors';
+import { Ionicons } from '@expo/vector-icons';
+import { t } from '../styles/designSystem';
 
 const Modal = ({ visible, onClose, title, children }) => (
-  <RNModal visible={visible} animationType="slide" transparent>
+  <RNModal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
     <View style={styles.overlay}>
       <View style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <TouchableOpacity onPress={onClose}><Text style={styles.closeBtn}>✕</Text></TouchableOpacity>
+          <TouchableOpacity onPress={onClose}><Ionicons name="close" size={24} color={t.colors.medium} /></TouchableOpacity>
         </View>
         <View style={styles.content}>{children}</View>
       </View>
@@ -17,11 +18,10 @@ const Modal = ({ visible, onClose, title, children }) => (
 );
 
 const styles = StyleSheet.create({
-  overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' },
-  modalContainer: { width: '90%', backgroundColor: theme.cardBackground, borderRadius: 16, padding: 20 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  title: { fontSize: 20, fontWeight: 'bold', color: theme.primaryText },
-  closeBtn: { fontSize: 22, color: theme.secondaryText },
+  overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: t.colors.overlay },
+  modalContainer: { width: '90%', backgroundColor: t.colors.surface, borderRadius: t.radius.modal, padding: t.spacing.xl },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: t.spacing.lg },
+  title: { fontSize: 20, fontFamily: t.typography.heading, fontWeight: '800', color: t.colors.dark },
   content: {},
 });
 

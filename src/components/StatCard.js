@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme, Spacing, BorderRadius } from '../styles/colors';
+import { t } from '../styles/designSystem';  // or the correct relative path
 
 const StatCard = ({ title, value, subtitle, color = theme.primary, icon, iconBg }) => (
   <View style={styles.card}>

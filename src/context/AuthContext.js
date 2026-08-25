@@ -1,83 +1,282 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
-import { db, authAPI } from '../../firebase';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
+import {
+  doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc,
+} from 'firebase/firestore';
+import { auth, db } from '../../firebase';
+import { getSampleInventory, getSampleTransactions } from '../utils/sampleData';
+import { useLoading } from './LoadingContext';
 
 const AuthContext = createContext({});
 export const useAuth = () => useContext(AuthContext);
 
-const AUTH_KEY = '@kita_log_auth';
+const ACTIVE_BUSINESS_KEY = '@kita_log_active_business';
+
+const storage = {
+  getItem: (key) => localStorage.getItem(key),
+  setItem: (key, value) => localStorage.setItem(key, value),
+  removeItem: (key) => localStorage.removeItem(key),
+};
+
+const seedBusinessData = async (businessId, businessType) => {
+  try {
+    const inventoryItems = getSampleInventory(businessType);
+    const transactions = getSampleTransactions(businessId);
+    for (const item of inventoryItems) {
+      await addDoc(collection(db, 'inventory'), { ...item, business_id: businessId, created_at: new Date().toISOString() });
+    }
+    for (const tx of transactions) {
+      await addDoc(collection(db, 'transactions'), tx);
+    }
+  } catch (e) {
+    console.error('Seeding error (business still created):', e);
+  }
+};
 
 export const AuthProvider = ({ children }) => {
+  const { showLoading, hideLoading } = useLoading();
   const [user, setUser] = useState(null);
+  const [businesses, setBusinesses] = useState([]);
+  const [activeBusinessId, setActiveBusinessId] = useState(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const [showAddBusinessModal, setShowAddBusinessModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
+
+  const fetchBusinesses = async (uid) => {
+    const q = query(collection(db, 'businesses'), where('owner_uid', '==', uid));
+    const snap = await getDocs(q);
+    const bizList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    setBusinesses(bizList);
+    return bizList;
+  };
+
+  const fetchUnlocked = async (uid) => {
+    const settingsDoc = await getDoc(doc(db, 'user_settings', uid));
+    if (settingsDoc.exists()) {
+      const isUnlocked = settingsDoc.data().business_limit_unlocked || false;
+      setUnlocked(isUnlocked);
+      return isUnlocked;
+    }
+    return false;
+  };
+
+  const loadActiveBusiness = async (uid) => {
+    const bizList = await fetchBusinesses(uid);
+    if (bizList.length === 0) {
+      setActiveBusinessId(null);
+      setShowAddBusinessModal(false);
+      return;
+    }
+    setShowAddBusinessModal(false);
+    const storedId = storage.getItem(ACTIVE_BUSINESS_KEY);
+    const found = bizList.find(b => b.id === storedId);
+    const activeId = found ? found.id : bizList[0].id;
+    setActiveBusinessId(activeId);
+    if (!found) {
+      storage.setItem(ACTIVE_BUSINESS_KEY, activeId);
+    }
+  };
 
   useEffect(() => {
-    const restoreSession = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(AUTH_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const accountInfo = await authAPI.getAccountInfo(parsed.idToken);
-          if (accountInfo.users?.length > 0) {
-            const firebaseUser = accountInfo.users[0];
-            const userDoc = await getDoc(doc(db, 'users', firebaseUser.localId));
-            const userData = userDoc.exists() ? userDoc.data() : {};
-            setUser({
-              uid: firebaseUser.localId,
-              email: firebaseUser.email,
-              idToken: parsed.idToken,
-              refreshToken: parsed.refreshToken,
-              ...userData,
-            });
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          if (userDoc.exists()) {
+            setUser(prev => ({ ...prev, ...userDoc.data() }));
           }
+        } catch (e) {
+          console.warn('Could not fetch user doc');
         }
-      } catch (e) {
-        await AsyncStorage.removeItem(AUTH_KEY);
+        await loadActiveBusiness(firebaseUser.uid);
+        await fetchUnlocked(firebaseUser.uid);
+      } else {
+        setUser(null);
+        setBusinesses([]);
+        setActiveBusinessId(null);
+        setUnlocked(false);
+        setShowAddBusinessModal(false);
       }
       setLoading(false);
-    };
-    restoreSession();
+      setAuthReady(true);
+    });
+    return unsubscribe;
   }, []);
 
   const register = async (email, password, username, companyName, businessType) => {
-    const authData = await authAPI.signUp(email, password);
-    const uid = authData.localId;
-    await setDoc(doc(db, 'users', uid), {
-      username, email, company_name: companyName, business_type: businessType,
-      created_at: new Date().toISOString(),
-    });
-    await setDoc(doc(db, 'user_settings', uid), {
-      currency_symbol: '₱', date_format: 'MM/DD/YYYY', theme: 'light',
-    });
-    const userData = { uid, email, username, company_name: companyName, business_type: businessType };
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify({
-      idToken: authData.idToken,
-      refreshToken: authData.refreshToken,
-    }));
-    setUser({ ...userData, idToken: authData.idToken, refreshToken: authData.refreshToken });
+    showLoading('Creating your account...');
+    try {
+      const credential = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = credential.user.uid;
+      await setDoc(doc(db, 'users', uid), { username, email, created_at: new Date().toISOString() });
+      setShowAddBusinessModal(false);
+    } catch (e) {
+      console.error('Register error:', e);
+      throw e;
+    } finally {
+      hideLoading();
+    }
   };
 
   const login = async (email, password) => {
-    const authData = await authAPI.signIn(email, password);
-    const uid = authData.localId;
-    const userDoc = await getDoc(doc(db, 'users', uid));
-    const userData = userDoc.exists() ? userDoc.data() : { email };
-    await AsyncStorage.setItem(AUTH_KEY, JSON.stringify({
-      idToken: authData.idToken,
-      refreshToken: authData.refreshToken,
-    }));
-    setUser({ uid, email, idToken: authData.idToken, refreshToken: authData.refreshToken, ...userData });
+    showLoading('Signing you in...');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (e) {
+      console.error('Login error:', e);
+      throw e;
+    } finally {
+      hideLoading();
+    }
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_KEY);
-    setUser(null);
+    showLoading('Logging out...');
+    try {
+      await signOut(auth);
+      storage.removeItem(ACTIVE_BUSINESS_KEY);
+      // Clear state immediately to ensure UI switches
+      setUser(null);
+      setBusinesses([]);
+      setActiveBusinessId(null);
+      setUnlocked(false);
+      setShowAddBusinessModal(false);
+      setAuthReady(true);
+    } catch (e) {
+      console.error('Logout error:', e);
+    } finally {
+      hideLoading();
+    }
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, register, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const addBusiness = async (businessName, businessType) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return { error: 'no_user' };
+    const uid = currentUser.uid;
+    showLoading('Creating your new business...');
+    try {
+      const isUnlocked = await fetchUnlocked(uid);
+      const currentBizList = await fetchBusinesses(uid);
+      if (!isUnlocked && currentBizList.length >= 2) {
+        return { error: 'limit_reached' };
+      }
+
+      const newBiz = {
+        business_name: businessName,
+        business_type: businessType,
+        owner_uid: uid,
+        currency_symbol: '₱',
+        date_format: 'MM/DD/YYYY',
+        created_at: new Date().toISOString(),
+      };
+      const docRef = await addDoc(collection(db, 'businesses'), newBiz);
+      const businessId = docRef.id;
+      await seedBusinessData(businessId, businessType);
+
+      await fetchBusinesses(uid);
+      setActiveBusinessId(businessId);
+      storage.setItem(ACTIVE_BUSINESS_KEY, businessId);
+      setShowAddBusinessModal(false);
+      return { success: true, businessId };
+    } catch (e) {
+      console.error('Add business error:', e);
+      return { error: 'add_failed', message: e.message };
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const deleteBusiness = async (businessId) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    showLoading('Deleting business...');
+    try {
+      await deleteDoc(doc(db, 'businesses', businessId));
+
+      const collectionsToDelete = ['inventory', 'transactions', 'budgets', 'recurring_transactions'];
+      for (const col of collectionsToDelete) {
+        const q = query(collection(db, col), where('business_id', '==', businessId));
+        const snap = await getDocs(q);
+        await Promise.all(snap.docs.map(d => deleteDoc(doc(db, col, d.id))));
+      }
+
+      const updatedBiz = await fetchBusinesses(uid);
+      if (updatedBiz.length === 0) {
+        setActiveBusinessId(null);
+        storage.removeItem(ACTIVE_BUSINESS_KEY);
+        setShowAddBusinessModal(false);
+      } else if (activeBusinessId === businessId) {
+        const newActiveId = updatedBiz[0].id;
+        setActiveBusinessId(newActiveId);
+        storage.setItem(ACTIVE_BUSINESS_KEY, newActiveId);
+      }
+    } catch (e) {
+      console.error('Delete business error:', e);
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const unlockUnlimited = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    showLoading('Processing payment...');
+    try {
+      await setDoc(doc(db, 'user_settings', currentUser.uid), { business_limit_unlocked: true }, { merge: true });
+      setUnlocked(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const cancelPlan = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    showLoading('Cancelling plan...');
+    try {
+      await setDoc(doc(db, 'user_settings', currentUser.uid), { business_limit_unlocked: false }, { merge: true });
+      setUnlocked(false);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    } finally {
+      hideLoading();
+    }
+  };
+
+  const openAddBusinessModal = () => setShowAddBusinessModal(true);
+  const closeAddBusinessModal = () => setShowAddBusinessModal(false);
+
+  const switchBusiness = async (businessId) => {
+    setActiveBusinessId(businessId);
+    storage.setItem(ACTIVE_BUSINESS_KEY, businessId);
+  };
+
+  const value = {
+    user,
+    businesses,
+    activeBusinessId,
+    unlocked,
+    showAddBusinessModal,
+    loading,
+    register,
+    login,
+    logout,
+    addBusiness,
+    deleteBusiness,
+    unlockUnlimited,
+    cancelPlan,
+    openAddBusinessModal,
+    closeAddBusinessModal,
+    switchBusiness,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

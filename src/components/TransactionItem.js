@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme, Colors, Spacing, BorderRadius } from '../styles/colors';
+import { t } from '../styles/designSystem';  // or the correct relative path
 
 const TransactionItem = ({ transaction, onEdit, onDelete }) => (
   <View style={styles.container}>

@@ -13,14 +13,14 @@ const tabs = [
   { key: 'Insights', icon: 'stats-chart-outline', activeIcon: 'stats-chart', label: 'Insights' },
 ];
 
-const BottomNav = ({ activeTab, onTabPress, navigation }) => {
+const BottomNav = ({ activeTab, onTabPress, onTransactionAdded }) => {
   const insets = useSafeAreaInsets();
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <>
       <View style={[styles.container, { paddingBottom: insets.bottom + t.spacing.sm }]}>
-        {tabs.map((tab) => {
+        {tabs.map(tab => {
           if (tab.isFab) {
             return (
               <TouchableOpacity key="fab" style={styles.fab} onPress={() => setModalVisible(true)} activeOpacity={0.8}>
@@ -37,7 +37,11 @@ const BottomNav = ({ activeTab, onTabPress, navigation }) => {
           );
         })}
       </View>
-      <AddTransactionModal visible={modalVisible} onClose={() => setModalVisible(false)} navigation={navigation} />
+      <AddTransactionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onTransactionAdded={onTransactionAdded}
+      />
     </>
   );
 };
@@ -49,7 +53,7 @@ const styles = StyleSheet.create({
     paddingTop: t.spacing.sm, ...t.shadows.lg,
   },
   tab: { alignItems: 'center', flex: 1, paddingVertical: t.spacing.xs },
-  label: { fontSize: 10, fontFamily: 'Inter-SemiBold', fontWeight: '600', color: t.colors.medium, marginTop: 2 },
+  label: { fontSize: 10, fontFamily: t.typography.bodySemiBold, fontWeight: '600', color: t.colors.medium, marginTop: 2 },
   labelActive: { color: t.colors.primary },
   fab: {
     width: 56, height: 56, borderRadius: 28, backgroundColor: t.colors.primary,
