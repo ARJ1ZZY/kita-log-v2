@@ -1,33 +1,38 @@
 {
   "expo": {
     "name": "KITA-LOG",
-    "slug": "kita-log",
+    "slug": "KITA-LOG",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "scheme": "kitalog",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E8EDF3"
+    },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.arjizzy.KITALOG",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.arjizzy.KITALOG",
-      "googleServicesFile": "./google-services.json"
+      "adaptiveIcon": {
+        "backgroundColor": "#E8EDF3",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "package": "com.arjizzy.KITALOG"
     },
     "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "4382662f-0fed-4ae2-99bb-ff76443d506d"
-      }
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font",
-      "expo-dev-client",
-      "@react-native-firebase/app"
-    ]
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2164c293-2478-40cc-b67b-27ed65ba12b3"
+      }
+    }
   }
 }
