@@ -6,7 +6,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import {
-  doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc,
+  doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, deleteDoc, updateDoc,
 } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { getSampleInventory, getSampleTransactions } from '../utils/sampleData';
@@ -18,9 +18,22 @@ export const useAuth = () => useContext(AuthContext);
 const ACTIVE_BUSINESS_KEY = '@kita_log_active_business';
 
 const storage = {
-  getItem: (key) => localStorage.getItem(key),
-  setItem: (key, value) => localStorage.setItem(key, value),
-  removeItem: (key) => localStorage.removeItem(key),
+  getItem: (key) => {
+    try {
+      if (typeof localStorage !== 'undefined') return localStorage.getItem(key);
+      return null;
+    } catch { return null; }
+  },
+  setItem: (key, value) => {
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.setItem(key, value);
+    } catch {}
+  },
+  removeItem: (key) => {
+    try {
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(key);
+    } catch {}
+  },
 };
 
 const seedBusinessData = async (businessId, businessType) => {
@@ -84,19 +97,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    let fallbackTimer = setTimeout(() => {
+      setLoading(false);
+      setAuthReady(true);
+    }, 5000);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(fallbackTimer);
       if (firebaseUser) {
         setUser({ uid: firebaseUser.uid, email: firebaseUser.email });
         try {
           const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            setUser(prev => ({ ...prev, ...userDoc.data() }));
-          }
-        } catch (e) {
-          console.warn('Could not fetch user doc');
-        }
-        await loadActiveBusiness(firebaseUser.uid);
-        await fetchUnlocked(firebaseUser.uid);
+          if (userDoc.exists()) setUser(prev => ({ ...prev, ...userDoc.data() }));
+        } catch (e) { console.warn('Could not fetch user doc'); }
+        try {
+          await loadActiveBusiness(firebaseUser.uid);
+          await fetchUnlocked(firebaseUser.uid);
+        } catch (e) { console.warn('Could not load business data:', e); }
       } else {
         setUser(null);
         setBusinesses([]);
@@ -107,7 +124,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       setAuthReady(true);
     });
-    return unsubscribe;
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      unsubscribe();
+    };
   }, []);
 
   const register = async (email, password, username, companyName, businessType) => {
@@ -142,7 +163,6 @@ export const AuthProvider = ({ children }) => {
     try {
       await signOut(auth);
       storage.removeItem(ACTIVE_BUSINESS_KEY);
-      // Clear state immediately to ensure UI switches
       setUser(null);
       setBusinesses([]);
       setActiveBusinessId(null);
@@ -199,15 +219,25 @@ export const AuthProvider = ({ children }) => {
     const uid = currentUser.uid;
     showLoading('Deleting business...');
     try {
-      await deleteDoc(doc(db, 'businesses', businessId));
-
+      // ✅ Step 1: Delete all related documents FIRST
       const collectionsToDelete = ['inventory', 'transactions', 'budgets', 'recurring_transactions'];
       for (const col of collectionsToDelete) {
         const q = query(collection(db, col), where('business_id', '==', businessId));
         const snap = await getDocs(q);
-        await Promise.all(snap.docs.map(d => deleteDoc(doc(db, col, d.id))));
+        // Delete each doc; ignore permission errors on stale documents
+        await Promise.all(
+          snap.docs.map(d =>
+            deleteDoc(doc(db, col, d.id)).catch(err => {
+              console.warn(`Skipping ${col}/${d.id}:`, err.code);
+            })
+          )
+        );
       }
 
+      // ✅ Step 2: Delete the business document LAST
+      await deleteDoc(doc(db, 'businesses', businessId));
+
+      // Update local state
       const updatedBiz = await fetchBusinesses(uid);
       if (updatedBiz.length === 0) {
         setActiveBusinessId(null);
@@ -254,7 +284,7 @@ export const AuthProvider = ({ children }) => {
   const openAddBusinessModal = () => setShowAddBusinessModal(true);
   const closeAddBusinessModal = () => setShowAddBusinessModal(false);
 
-  const switchBusiness = async (businessId) => {
+  const switchBusiness = (businessId) => {
     setActiveBusinessId(businessId);
     storage.setItem(ACTIVE_BUSINESS_KEY, businessId);
   };

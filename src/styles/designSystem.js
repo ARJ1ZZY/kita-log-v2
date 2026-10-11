@@ -1,5 +1,3 @@
-import { Animated } from 'react-native';
-
 export const t = {
   colors: {
     primary: '#2563EB',
@@ -23,6 +21,7 @@ export const t = {
     overlay: 'rgba(15,23,42,0.5)',
   },
   typography: {
+    // ✅ Original KITA-LOG font names
     heading: 'SpaceGrotesk-Bold',
     body: 'Inter-Regular',
     bodyMedium: 'Inter-Medium',
@@ -51,10 +50,5 @@ export const t = {
     md: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 3 },
     lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 5 },
     xl: { shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 10 },
-  },
-  animations: {
-    fadeIn: (anim, duration = 400) => Animated.timing(anim, { toValue: 1, duration, useNativeDriver: true }),
-    fadeOut: (anim, duration = 300) => Animated.timing(anim, { toValue: 0, duration, useNativeDriver: true }),
-    spring: (anim, toValue = 1) => Animated.spring(anim, { toValue, damping: 15, stiffness: 150, useNativeDriver: true }),
   },
 };
